@@ -52,14 +52,15 @@ export default function RegisterPage() {
     } else {
       toast({
         title: "Registration Successful!",
-        description: "Please confirm your email before logging in.",
+        description: "Please check your email and confirm your account before logging in.",
         variant: "success",
       })
+      
+      // Redirect to Gmail after 2 seconds
       setTimeout(() => {
         window.location.href = "https://mail.google.com"
       }, 2000)
     }
-
     setLoading(false)
   }
 

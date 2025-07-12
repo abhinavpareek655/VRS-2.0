@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, Car } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
+import { useToast } from "@/hooks/use-toast"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -21,6 +22,7 @@ export default function LoginPage() {
   const [error, setError] = useState("")
 
   const { signIn } = useAuth()
+  const { toast } = useToast()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,9 +33,19 @@ export default function LoginPage() {
     const { error } = await signIn(email, password)
 
     if (error) {
-      setError(error.message)
+      if (error.message.includes("Email not confirmed") || error.message.includes("Email not verified")) {
+        setError("Please confirm your email address before logging in. Check your inbox for the confirmation link.")
+        toast({
+          title: "Email Not Confirmed",
+          description: "Please check your email and click the confirmation link before trying to log in.",
+          variant: "destructive",
+        })
+      } else {
+        setError(error.message)
+      }
     } else {
-      router.push("/")
+      // If signIn succeeds, user is authenticated and email is confirmed
+      router.push("/dashboard")
     }
 
     setLoading(false)

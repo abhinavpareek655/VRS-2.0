@@ -27,12 +27,12 @@ export function Navbar() {
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <Car className="h-8 w-8 text-yellow-500" />
-              <span className="text-xl font-bold text-gray-900">RentWheels</span>
+              <img src="/RentWheels-logo.png" width="50px"/>
+              <span className="text-xl font-bold text-gray-900 font-serif">RentWheels</span>
             </Link>
           </div>
 
