@@ -275,7 +275,7 @@ export default function VehiclesPage() {
                         </Badge>
                       </div>
                       <div className="absolute top-4 right-4">
-                        <Badge className="bg-yellow-500 text-black">₹{vehicle.price_per_day}/day</Badge>
+                        <Badge className="bg-yellow-500 text-black">₹{vehicle.price_per_day}/hour</Badge>
                       </div>
                     </div>
 

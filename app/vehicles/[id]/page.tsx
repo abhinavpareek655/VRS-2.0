@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { RazorpayPaymentForm } from "@/components/razorpay-payment-form"
 import { toast } from "sonner"
 import dynamic from "next/dynamic"
 import DatePicker from "react-datepicker"
@@ -41,6 +42,8 @@ export default function VehicleDetailsPage() {
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null)
   const [bookings, setBookings] = useState<any[]>([])
   const [errorMsg, setErrorMsg] = useState("")
+  const [showPayment, setShowPayment] = useState(false)
+  const [bookingSuccess, setBookingSuccess] = useState(false)
 
   useEffect(() => {
     fetchVehicle()
@@ -89,54 +92,115 @@ export default function VehicleDetailsPage() {
     setBooking({ ...booking, [e.target.name]: e.target.value })
   }
 
+  // Helper function to calculate total hours and amount
+  const calculateTotalHours = () => {
+    if (!booking.pickupDate || !booking.returnDate) return 1
+    const start = new Date(booking.pickupDate)
+    const end = new Date(booking.returnDate)
+    const hoursDifference = (end.getTime() - start.getTime()) / (1000 * 60 * 60)
+    return Math.max(1, Math.ceil(hoursDifference))
+  }
+
+  const calculateTotalAmount = () => {
+    return calculateTotalHours() * (vehicle?.price_per_day || 0) // price_per_day is now price_per_hour
+  }
+
+  // Check if slot is still available (real-time check)
+  const checkSlotAvailability = async (pickupDate: string, returnDate: string) => {
+    const { data: existingBookings, error } = await supabase
+      .from('bookings')
+      .select('pickup_date, return_date')
+      .eq('vehicle_id', id)
+      .in('status', ['pending', 'confirmed', 'active'])
+
+    if (error) {
+      console.error('Error checking availability:', error)
+      return false
+    }
+
+    const requestStart = new Date(pickupDate)
+    const requestEnd = new Date(returnDate)
+
+    // Check for conflicts with existing bookings
+    return !existingBookings.some(booking => {
+      const existingStart = new Date(booking.pickup_date)
+      const existingEnd = new Date(booking.return_date)
+      
+      return (
+        (requestStart >= existingStart && requestStart < existingEnd) ||
+        (requestEnd > existingStart && requestEnd <= existingEnd) ||
+        (requestStart <= existingStart && requestEnd >= existingEnd)
+      )
+    })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrorMsg("")
+    
+    // Validation
     if (!booking.pickupLocation || !booking.pickupDate || !booking.returnDate) {
       toast.error("Please fill in all required fields.")
       return
     }
+
     const pickup = new Date(booking.pickupDate)
     const ret = new Date(booking.returnDate)
+    
     if (pickup >= ret) {
       setErrorMsg("Pickup date and time must be before return date and time.")
       return
     }
-    if ((ret.getTime() - pickup.getTime()) < 60 * 60 * 1000) {
-      setErrorMsg("There must be at least a 1-hour gap between pickup and return.")
+
+    // Check for minimum 3-hour gap
+    const hoursDifference = (ret.getTime() - pickup.getTime()) / (1000 * 60 * 60)
+    if (hoursDifference < 3) {
+      setErrorMsg("There must be at least a 3-hour gap between pickup and return time.")
       return
     }
+
     setSubmitting(true)
-    // Calculate total days and amount
-    const start = new Date(booking.pickupDate)
-    const end = new Date(booking.returnDate)
-    const totalDays = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)))
-    const totalAmount = totalDays * (vehicle?.price_per_day || 0)
-    // Get user id from supabase auth
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      toast.error("You must be logged in to book a vehicle.")
+
+    try {
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        toast.error("You must be logged in to book a vehicle.")
+        setSubmitting(false)
+        return
+      }
+
+      // Real-time availability check before proceeding to payment
+      const isSlotAvailable = await checkSlotAvailability(booking.pickupDate, booking.returnDate)
+      if (!isSlotAvailable) {
+        setErrorMsg("This time slot is no longer available. Please select different dates.")
+        setSubmitting(false)
+        await fetchBookings() // Refresh bookings
+        return
+      }
+
+      // Proceed to payment
+      setShowPayment(true)
       setSubmitting(false)
-      return
+    } catch (error) {
+      console.error('Error during booking validation:', error)
+      toast.error("An error occurred. Please try again.")
+      setSubmitting(false)
     }
-    const { error } = await supabase.from("bookings").insert({
-      user_id: user.id,
-      vehicle_id: vehicle.id,
-      pickup_location: booking.pickupLocation,
-      pickup_date: booking.pickupDate,
-      return_date: booking.returnDate,
-      total_days: totalDays,
-      total_amount: totalAmount,
-      special_requests: booking.specialRequests,
-    })
-    setSubmitting(false)
-    if (error) {
-      toast.error("Booking failed. Please try again.")
-    } else {
-      setConfirmation("Your booking has been received! We'll contact you soon.")
-      toast.success("Booking successful!")
-      setTimeout(() => router.push("/dashboard"), 2000)
-    }
+  }
+
+  const handlePaymentSuccess = (bookingId: string) => {
+    setShowPayment(false)
+    setBookingSuccess(true)
+    setConfirmation("🎉 Booking confirmed successfully! Your booking ID is: " + bookingId)
+    toast.success("Payment successful! Booking confirmed.")
+    
+    // Redirect to dashboard after 3 seconds
+    setTimeout(() => router.push("/"), 3000)
+  }
+
+  const handlePaymentCancel = () => {
+    setShowPayment(false)
   }
 
   if (loading) {
@@ -183,7 +247,7 @@ export default function VehicleDetailsPage() {
                   {vehicle.brand} {vehicle.model} • {vehicle.year}
                 </CardDescription>
                 <div className="text-lg font-semibold text-yellow-600 mb-2">
-                  ₹{vehicle.price_per_day} / day
+                  ₹{vehicle.price_per_day} / hour
                 </div>
                 <div className="text-gray-600 mb-2">
                   {vehicle.seats} seats • {vehicle.fuel_type} • {vehicle.transmission}
@@ -199,8 +263,24 @@ export default function VehicleDetailsPage() {
             <CardDescription>Fill in your trip details below.</CardDescription>
           </CardHeader>
           <CardContent>
-            {confirmation ? (
+            {bookingSuccess || confirmation ? (
               <div className="text-green-600 font-semibold text-center py-8">{confirmation}</div>
+            ) : showPayment ? (
+              <div className="flex flex-col items-center space-y-4">
+                <RazorpayPaymentForm
+                  vehicleId={vehicle.id}
+                  vehicleName={vehicle.name}
+                  pricePerHour={vehicle.price_per_day}
+                  pickupDate={booking.pickupDate}
+                  returnDate={booking.returnDate}
+                  pickupLocation={booking.pickupLocation}
+                  specialRequests={booking.specialRequests}
+                  totalHours={calculateTotalHours()}
+                  totalAmount={calculateTotalAmount()}
+                  onSuccess={handlePaymentSuccess}
+                  onCancel={handlePaymentCancel}
+                />
+              </div>
             ) : (
               <form className="grid gap-4" onSubmit={handleSubmit}>
                 {errorMsg && (
@@ -262,12 +342,28 @@ export default function VehicleDetailsPage() {
                     />
                   </div>
                 </div>
+                
+                {/* Booking Summary */}
+                {booking.pickupDate && booking.returnDate && (
+                  <div className="bg-gray-50 p-4 rounded-lg mt-4">
+                    <h3 className="font-semibold mb-2">Booking Summary</h3>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <span>Duration:</span>
+                      <span>{calculateTotalHours()} hours</span>
+                      <span>Rate per hour:</span>
+                      <span>₹{vehicle.price_per_day}</span>
+                      <span className="font-semibold">Total Amount:</span>
+                      <span className="font-semibold text-lg">₹{calculateTotalAmount()}</span>
+                    </div>
+                  </div>
+                )}
+
                 <Button
                   type="submit"
                   className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold mt-4"
                   disabled={submitting}
                 >
-                  {submitting ? "Booking..." : "Book Now"}
+                  {submitting ? "Checking availability..." : "Proceed to Payment"}
                 </Button>
               </form>
             )}

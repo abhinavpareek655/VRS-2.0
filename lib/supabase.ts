@@ -81,6 +81,7 @@ export type Database = {
           pickup_date: string
           return_date: string
           total_days: number
+          total_hours: number
           total_amount: number
           status: "pending" | "confirmed" | "active" | "completed" | "cancelled"
           payment_status: "pending" | "paid" | "failed" | "refunded"
@@ -97,6 +98,7 @@ export type Database = {
           pickup_date: string
           return_date: string
           total_days: number
+          total_hours: number
           total_amount: number
           status?: "pending" | "confirmed" | "active" | "completed" | "cancelled"
           payment_status?: "pending" | "paid" | "failed" | "refunded"

@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS public.bookings (
   pickup_date TIMESTAMP WITH TIME ZONE NOT NULL,
   return_date TIMESTAMP WITH TIME ZONE NOT NULL,
   total_days INTEGER NOT NULL,
+  total_hours INTEGER NOT NULL,
   total_amount DECIMAL(10,2) NOT NULL,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'active', 'completed', 'cancelled')),
   payment_status TEXT DEFAULT 'pending' CHECK (payment_status IN ('pending', 'paid', 'failed', 'refunded')),
