@@ -47,6 +47,9 @@ export function Navbar() {
             <Link href="/contact" className="text-gray-700 hover:text-yellow-500 font-medium">
               Contact
             </Link>
+            <Link href="/help" className="text-gray-700 hover:text-yellow-500 font-medium">
+              Help
+            </Link>
 
             {user ? (
               <DropdownMenu>
@@ -130,6 +133,13 @@ export function Navbar() {
                 onClick={() => setIsOpen(false)}
               >
                 Contact
+              </Link>
+              <Link
+                href="/help"
+                className="block px-3 py-2 text-gray-700 hover:text-yellow-500"
+                onClick={() => setIsOpen(false)}
+              >
+                Help
               </Link>
 
               {user ? (

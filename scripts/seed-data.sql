@@ -30,13 +30,3 @@ INSERT INTO public.vehicles (category_id, name, brand, model, year, type, price_
 -- Hatchbacks (₹1.7-1.9/hour = ₹40-45/day)
 ((SELECT id FROM public.vehicle_categories WHERE name = 'Hatchbacks'), 'Maruti Swift', 'Maruti Suzuki', 'Swift', 2023, 'car', 1.67, 'Petrol', 'Manual', 5, ARRAY['Fuel Efficient', 'Compact Size', 'Easy Parking'], ARRAY['https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800'], 'Mumbai'),
 ((SELECT id FROM public.vehicle_categories WHERE name = 'Hatchbacks'), 'Hyundai i20', 'Hyundai', 'i20', 2023, 'car', 1.88, 'Petrol', 'Automatic', 5, ARRAY['Touchscreen Infotainment', 'Wireless Charging', 'Sunroof'], ARRAY['https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800'], 'Delhi');
-
--- Insert sample booking (hourly booking example)
-INSERT INTO public.bookings (vehicle_id, user_id, start_time, end_time, total_price, total_hours, status) VALUES
-((SELECT id FROM public.vehicles WHERE name = 'BMW 5 Series' LIMIT 1), 
- '12345678-1234-1234-1234-123456789012', 
- '2024-01-15 10:00:00+00', 
- '2024-01-15 18:00:00+00', 
- 50.00, 
- 8, 
- 'confirmed');

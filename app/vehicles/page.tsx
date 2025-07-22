@@ -204,17 +204,17 @@ export default function VehiclesPage() {
 
                 {/* Price Range */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Price per Day</label>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Price per Hour</label>
                   <Select value={priceRange} onValueChange={setPriceRange}>
                     <SelectTrigger>
                       <SelectValue placeholder="All Prices" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Prices</SelectItem>
-                      <SelectItem value="0-50">₹0 - ₹50</SelectItem>
-                      <SelectItem value="50-100">₹50 - ₹100</SelectItem>
-                      <SelectItem value="100-200">₹100 - ₹200</SelectItem>
-                      <SelectItem value="200">₹200+</SelectItem>
+                      <SelectItem value="0-2">₹0 - ₹2</SelectItem>
+                      <SelectItem value="2-5">₹2 - ₹5</SelectItem>
+                      <SelectItem value="5-8">₹5 - ₹8</SelectItem>
+                      <SelectItem value="8">₹8+</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

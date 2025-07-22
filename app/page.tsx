@@ -5,6 +5,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookingWidget } from "@/components/booking-widget"
+import { ReviewsCarousel } from "@/components/reviews-carousel"
+import { FAQSection } from "@/components/faq-section"
 import { Shield, Zap, Users, Award } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -551,6 +553,12 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Reviews Section */}
+      <ReviewsCarousel />
+
+      {/* FAQ Section */}
+      <FAQSection />
 
       {/* CTA Section */}
       <section className="py-20 px-4 bg-yellow-500">
