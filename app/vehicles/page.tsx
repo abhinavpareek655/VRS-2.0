@@ -21,11 +21,17 @@ export default function VehiclesPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
+  const [availabilityLoading, setAvailabilityLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedType, setSelectedType] = useState("all")
   const [priceRange, setPriceRange] = useState("all")
   const [sortBy, setSortBy] = useState("name")
+  const [dateFilters, setDateFilters] = useState({
+    pickupDate: "",
+    returnDate: "",
+    location: ""
+  })
 
   const searchParams = useSearchParams()
 
@@ -37,15 +43,59 @@ export default function VehiclesPage() {
     // Apply filters from URL params
     const category = searchParams.get("category")
     const location = searchParams.get("location")
+    const pickup = searchParams.get("pickup")
+    const returnDate = searchParams.get("return")
 
     if (category) {
       setSelectedCategory(category)
+    }
+    
+    if (location || pickup || returnDate) {
+      setDateFilters({
+        location: location || "",
+        pickupDate: pickup || "",
+        returnDate: returnDate || ""
+      })
     }
   }, [searchParams])
 
   useEffect(() => {
     filterVehicles()
-  }, [vehicles, searchTerm, selectedCategory, selectedType, priceRange, sortBy])
+  }, [vehicles, searchTerm, selectedCategory, selectedType, priceRange, sortBy, dateFilters])
+
+  // Check vehicle availability for specific dates
+  const checkVehicleAvailability = async (vehicleId: string, pickupDate: string, returnDate: string): Promise<boolean> => {
+    try {
+      const pickup = new Date(pickupDate)
+      const returnD = new Date(returnDate)
+
+      const { data: bookings, error } = await supabase
+        .from('bookings')
+        .select('pickup_date, return_date')
+        .eq('vehicle_id', vehicleId)
+        .in('status', ['confirmed', 'active'])
+        .eq('payment_status', 'paid')
+
+      if (error) {
+        console.error('Error checking availability:', error)
+        return false
+      }
+
+      for (const booking of bookings || []) {
+        const bookingStart = new Date(booking.pickup_date)
+        const bookingEnd = new Date(booking.return_date)
+
+        if (pickup < bookingEnd && returnD > bookingStart) {
+          return false
+        }
+      }
+
+      return true
+    } catch (error) {
+      console.error('Error checking vehicle availability:', error)
+      return false
+    }
+  }
 
   const fetchVehicles = async () => {
     try {
@@ -71,7 +121,8 @@ export default function VehiclesPage() {
     }
   }
 
-  const filterVehicles = () => {
+  const filterVehicles = async () => {
+    setAvailabilityLoading(dateFilters.pickupDate && dateFilters.returnDate ? true : false)
     let filtered = [...vehicles]
 
     // Search filter
@@ -81,6 +132,13 @@ export default function VehiclesPage() {
           vehicle.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           vehicle.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
           vehicle.model.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    }
+
+    // Location filter from date filters
+    if (dateFilters.location) {
+      filtered = filtered.filter((vehicle) => 
+        vehicle.location.toLowerCase().includes(dateFilters.location.toLowerCase())
       )
     }
 
@@ -107,6 +165,17 @@ export default function VehiclesPage() {
       })
     }
 
+    // Availability filter (only if both dates are provided)
+    if (dateFilters.pickupDate && dateFilters.returnDate) {
+      const availabilityPromises = filtered.map(async (vehicle) => {
+        const isAvailable = await checkVehicleAvailability(vehicle.id, dateFilters.pickupDate, dateFilters.returnDate)
+        return { vehicle, isAvailable }
+      })
+
+      const availabilityResults = await Promise.all(availabilityPromises)
+      filtered = availabilityResults.filter(result => result.isAvailable).map(result => result.vehicle)
+    }
+
     // Sort
     filtered.sort((a, b) => {
       switch (sortBy) {
@@ -121,6 +190,7 @@ export default function VehiclesPage() {
     })
 
     setFilteredVehicles(filtered)
+    setAvailabilityLoading(false)
   }
 
   if (loading) {
@@ -239,25 +309,57 @@ export default function VehiclesPage() {
 
           {/* Vehicle Grid */}
           <div className="lg:w-3/4">
-            <div className="flex justify-between items-center mb-6">
+                      <div className="flex justify-between items-center mb-6">
+            <div>
               <p className="text-gray-600">
-                {filteredVehicles.length} vehicle{filteredVehicles.length !== 1 ? "s" : ""} found
+                {availabilityLoading ? "Checking availability..." : (
+                  <>
+                    {filteredVehicles.length} vehicle{filteredVehicles.length !== 1 ? "s" : ""} found
+                    {dateFilters.pickupDate && dateFilters.returnDate && (
+                      <span className="text-green-600 ml-2">
+                        • Available for selected dates
+                      </span>
+                    )}
+                  </>
+                )}
               </p>
+              {dateFilters.pickupDate && dateFilters.returnDate && (
+                <p className="text-sm text-gray-500 mt-1">
+                  {new Date(dateFilters.pickupDate).toLocaleDateString()} - {new Date(dateFilters.returnDate).toLocaleDateString()}
+                  {dateFilters.location && ` in ${dateFilters.location}`}
+                </p>
+              )}
             </div>
+          </div>
 
             {filteredVehicles.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-500 text-lg mb-4">No vehicles found matching your criteria</p>
-                <Button
-                  onClick={() => {
-                    setSearchTerm("")
-                    setSelectedCategory("all")
-                    setSelectedType("all")
-                    setPriceRange("all")
-                  }}
-                >
-                  Clear Filters
-                </Button>
+                {availabilityLoading ? (
+                  <div className="flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500 mb-4"></div>
+                    <p className="text-gray-500 text-lg">Checking vehicle availability...</p>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-gray-500 text-lg mb-4">
+                      {dateFilters.pickupDate && dateFilters.returnDate 
+                        ? "No vehicles available for the selected dates" 
+                        : "No vehicles found matching your criteria"
+                      }
+                    </p>
+                    <Button
+                      onClick={() => {
+                        setSearchTerm("")
+                        setSelectedCategory("all")
+                        setSelectedType("all")
+                        setPriceRange("all")
+                        setDateFilters({ pickupDate: "", returnDate: "", location: "" })
+                      }}
+                    >
+                      Clear Filters
+                    </Button>
+                  </>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -274,8 +376,13 @@ export default function VehiclesPage() {
                           {vehicle.type === "car" ? "🚗" : "🏍️"} {vehicle.type.toUpperCase()}
                         </Badge>
                       </div>
-                      <div className="absolute top-4 right-4">
+                      <div className="absolute top-4 right-4 flex flex-col gap-1">
                         <Badge className="bg-yellow-500 text-black">₹{vehicle.price_per_day}/day</Badge>
+                        {dateFilters.pickupDate && dateFilters.returnDate && (
+                          <Badge className="bg-green-500 text-white text-xs">
+                            ✓ Available
+                          </Badge>
+                        )}
                       </div>
                     </div>
 
@@ -328,9 +435,11 @@ export default function VehiclesPage() {
                         </div>
                       )}
 
-                      <Link href={`/vehicles/${vehicle.id}`}>
+                      <Link href={`/vehicles/${vehicle.id}${dateFilters.pickupDate && dateFilters.returnDate 
+                        ? `?pickup=${encodeURIComponent(dateFilters.pickupDate)}&return=${encodeURIComponent(dateFilters.returnDate)}&location=${encodeURIComponent(dateFilters.location)}`
+                        : ''}`}>
                         <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-black">
-                          View Details & Book
+                          {dateFilters.pickupDate && dateFilters.returnDate ? "Book Now" : "View Details & Book"}
                         </Button>
                       </Link>
                     </CardContent>
