@@ -102,7 +102,12 @@ export default function VehicleDetailsPage() {
   }
 
   const calculateTotalAmount = () => {
-    return calculateTotalHours() * (vehicle?.price_per_day || 0) // price_per_day is now price_per_hour
+    const originalAmount = calculateTotalHours() * (vehicle?.price_per_day || 0) // price_per_day is now price_per_hour
+    return process.env.NEXT_PUBLIC_TESTING_MODE === 'true' ? 1 : originalAmount
+  }
+
+  const getOriginalAmount = () => {
+    return calculateTotalHours() * (vehicle?.price_per_day || 0)
   }
 
   // Check if slot is still available (real-time check)
@@ -247,7 +252,14 @@ export default function VehicleDetailsPage() {
                   {vehicle.brand} {vehicle.model} • {vehicle.year}
                 </CardDescription>
                 <div className="text-lg font-semibold text-yellow-600 mb-2">
-                  ₹{vehicle.price_per_day} / hour
+                  {process.env.NEXT_PUBLIC_TESTING_MODE === 'true' ? (
+                    <div className="space-y-1">
+                      <div className="line-through text-gray-500 text-sm">₹{vehicle.price_per_day} / hour</div>
+                      <div className="text-green-600 font-bold">₹1 / booking (Testing Mode) 🧪</div>
+                    </div>
+                  ) : (
+                    `₹${vehicle.price_per_day} / hour`
+                  )}
                 </div>
                 <div className="text-gray-600 mb-2">
                   {vehicle.seats} seats • {vehicle.fuel_type} • {vehicle.transmission}
@@ -346,14 +358,36 @@ export default function VehicleDetailsPage() {
                 {/* Booking Summary */}
                 {booking.pickupDate && booking.returnDate && (
                   <div className="bg-gray-50 p-4 rounded-lg mt-4">
+                    {process.env.NEXT_PUBLIC_TESTING_MODE === 'true' && (
+                      <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          <span className="font-semibold text-green-800 text-sm">🧪 Testing Mode</span>
+                        </div>
+                        <p className="text-xs text-green-700">Special ₹1 pricing for testing period</p>
+                      </div>
+                    )}
                     <h3 className="font-semibold mb-2">Booking Summary</h3>
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <span>Duration:</span>
                       <span>{calculateTotalHours()} hours</span>
                       <span>Rate per hour:</span>
                       <span>₹{vehicle.price_per_day}</span>
-                      <span className="font-semibold">Total Amount:</span>
-                      <span className="font-semibold text-lg">₹{calculateTotalAmount()}</span>
+                      {process.env.NEXT_PUBLIC_TESTING_MODE === 'true' ? (
+                        <>
+                          <span>Subtotal:</span>
+                          <span className="line-through text-gray-500">₹{getOriginalAmount()}</span>
+                          <span>Testing Discount:</span>
+                          <span className="text-green-600">-₹{getOriginalAmount() - 1}</span>
+                          <span className="font-semibold text-green-600">Testing Price:</span>
+                          <span className="font-semibold text-lg text-green-600">₹1</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="font-semibold">Total Amount:</span>
+                          <span className="font-semibold text-lg">₹{calculateTotalAmount()}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}

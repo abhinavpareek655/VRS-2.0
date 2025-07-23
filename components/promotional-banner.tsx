@@ -29,7 +29,7 @@ const promotions: Promotion[] = [
     code: "WELCOME25",
     validUntil: "2024-01-31",
     type: "new",
-    color: "from-green-500 to-green-600",
+    color: "from-yellow-500 to-yellow-600",
     icon: Gift
   },
   {

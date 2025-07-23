@@ -8,6 +8,7 @@ A modern, full-stack vehicle rental platform built with Next.js 15, Supabase, an
 - **Real-time Vehicle Search**: Find available vehicles by location and dates
 - **Smart Date Filtering**: Automatically excludes booked vehicles from search results
 - **Instant Payment Processing**: Secure Razorpay integration for immediate booking confirmation
+- **Email Notifications**: Automated booking confirmations and cancellation emails with invoices
 - **User Authentication**: Complete signup/login system with Supabase Auth
 - **Booking Management**: Track and manage all your reservations
 - **Admin Dashboard**: Comprehensive vehicle and booking management
@@ -60,6 +61,13 @@ A modern, full-stack vehicle rental platform built with Next.js 15, Supabase, an
    NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_your_key_id
    RAZORPAY_KEY_ID=rzp_test_your_key_id
    RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+
+   # Email Configuration (See docs/EMAIL_SETUP.md for details)
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=your_email@gmail.com
+   SMTP_PASS=your_app_password
+   SMTP_FROM=your_from_email@gmail.com
    ```
 
 3. **Database Setup**
@@ -104,6 +112,7 @@ VRS-2.0/
 3. **Select**: Users choose a vehicle and fill booking details (minimum 3 hours)
 4. **Payment**: Secure payment form loads with Razorpay integration
 5. **Confirm**: Instant booking confirmation with unique ID
+6. **Email**: Automated invoice email sent with all booking details
 
 ### Payment Processing
 - Secure Razorpay payment form
@@ -118,6 +127,7 @@ VRS-2.0/
 - `GET /api/vehicle-availability` - Get booked dates for a vehicle
 - `POST /api/create-razorpay-order` - Initialize Razorpay payment
 - `POST /api/confirm-booking` - Confirm booking after payment
+- `POST /api/send-email` - Send booking confirmation/cancellation emails
 
 ## 🔒 Security Features
 

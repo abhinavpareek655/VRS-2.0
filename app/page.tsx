@@ -54,7 +54,7 @@ const testimonialsRow1 = [
     role: "Business Executive",
     content: "Exceptional service and premium vehicles. The booking process was seamless and the car was immaculate.",
     rating: 5,
-    avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&h=100&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     name: "Michael Chen",
@@ -207,6 +207,19 @@ export default function HomePage() {
             Discover luxury, comfort, and performance with our premium fleet
           </motion.p>
 
+          {process.env.NEXT_PUBLIC_TESTING_MODE === 'true' && (
+            <motion.div
+              className="mb-6 px-6 py-3 bg-green-600 rounded-lg border border-green-400"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <p className="text-lg font-semibold text-white">
+                🧪 <span className="text-green-100">Testing Period:</span> All vehicles available for ₹1 per booking!
+              </p>
+            </motion.div>
+          )}
+
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -246,12 +259,12 @@ export default function HomePage() {
 
       {/* Sticky Booking Widget */}
       <motion.div
-        className={`fixed top-16 left-0 right-0 z-40 transition-all duration-300 ${
-          showBookingWidget ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
+        className={`fixed bottom-0 left-0 right-0 z-40 transition-all duration-300 ${
+          showBookingWidget ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
         }`}
         style={{ pointerEvents: showBookingWidget ? "auto" : "none" }}
       >
-        <div className="max-w-6xl mx-auto px-4">
+        <div className="max-w-6xl mx-auto px-4 pb-4">
           <BookingWidget variant="floating" />
         </div>
       </motion.div>

@@ -22,7 +22,7 @@ const testimonials: Review[] = [
   {
     id: "1",
     userName: "Arjun Sharma",
-    userImage: "/placeholder-user.jpg",
+    userImage: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=200&h=200&auto=format&fit=crop&crop=face&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     rating: 5,
     comment: "Excellent service! The BMW 5 Series was in perfect condition and the booking process was seamless. Highly recommended for business trips.",
     vehicleName: "BMW 5 Series",
@@ -32,7 +32,7 @@ const testimonials: Review[] = [
   {
     id: "2",
     userName: "Priya Patel",
-    userImage: "/placeholder-user.jpg",
+    userImage: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?q=80&w=200&h=200&auto=format&fit=crop&crop=face&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://images.unsplash.com/photo-1607746882042-944635dfe10e?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     rating: 5,
     comment: "Amazing experience with RentWheels! The Honda CB350RS was perfect for my weekend trip. Clean, well-maintained, and great customer service.",
     vehicleName: "Honda CB350RS",
@@ -42,7 +42,7 @@ const testimonials: Review[] = [
   {
     id: "3",
     userName: "Rahul Kumar",
-    userImage: "/placeholder-user.jpg",
+    userImage: "https://images.unsplash.com/photo-1654110455429-cf322b40a906?q=80&w=200&h=200&auto=format&fit=crop&crop=face&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     rating: 4,
     comment: "Good value for money. The Maruti Swift was fuel efficient and perfect for city drives. The hourly pricing is very convenient.",
     vehicleName: "Maruti Swift",
@@ -52,7 +52,7 @@ const testimonials: Review[] = [
   {
     id: "4",
     userName: "Sneha Reddy",
-    userImage: "/placeholder-user.jpg",
+    userImage: "https://plus.unsplash.com/premium_photo-1689551671548-79ff30459d2a?q=80&w=200&h=200&auto=format&fit=crop&crop=face&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     rating: 5,
     comment: "Outstanding service! Booked the Toyota Fortuner for a family trip to Goa. Spacious, comfortable, and the staff was very helpful.",
     vehicleName: "Toyota Fortuner",
@@ -62,7 +62,7 @@ const testimonials: Review[] = [
   {
     id: "5",
     userName: "Vikram Singh",
-    userImage: "/placeholder-user.jpg",
+    userImage: "https://plus.unsplash.com/premium_photo-1693258698597-1b2b1bf943cc?q=80&w=200&h=200&auto=format&fit=crop&crop=face&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     rating: 5,
     comment: "The KTM Duke 390 was a beast! Perfect for my solo adventure trip. RentWheels made the entire process hassle-free.",
     vehicleName: "KTM Duke 390",
@@ -102,7 +102,7 @@ export function ReviewsCarousel() {
     <div className="bg-gray-50 py-16">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">What Our Customers Say</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4 font-serif">What Our Customers Say</h2>
           <p className="text-xl text-gray-600">Real experiences from real customers</p>
         </div>
 

@@ -107,6 +107,19 @@ export default function BookingsPage() {
 
   const cancelBooking = async (bookingId: string) => {
     try {
+      // First, get the booking details before canceling
+      const { data: bookingData, error: fetchError } = await supabase
+        .from("bookings")
+        .select(`
+          *,
+          vehicles(*),
+          users(*)
+        `)
+        .eq("id", bookingId)
+        .single()
+
+      if (fetchError) throw fetchError
+
       const { error } = await supabase
         .from("bookings")
         .update({ status: "cancelled" })
@@ -114,9 +127,37 @@ export default function BookingsPage() {
 
       if (error) throw error
 
+      // Send cancellation email
+      if (bookingData?.users?.email) {
+        try {
+          const response = await fetch('/api/send-email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              type: 'booking-cancellation',
+              bookingDetails: {
+                booking: bookingData,
+                vehicle: bookingData.vehicles,
+                user: bookingData.users,
+                bookingId: bookingId
+              }
+            })
+          })
+
+          if (!response.ok) {
+            console.error('Failed to send cancellation email')
+          }
+        } catch (emailError) {
+          console.error('Error sending cancellation email:', emailError)
+          // Don't fail the cancellation if email fails
+        }
+      }
+
       toast({
         title: "Booking cancelled",
-        description: "Your booking has been cancelled successfully.",
+        description: "Your booking has been cancelled successfully. A confirmation email has been sent.",
       })
       
       fetchBookings() // Refresh the list

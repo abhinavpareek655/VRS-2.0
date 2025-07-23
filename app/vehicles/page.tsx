@@ -275,7 +275,14 @@ export default function VehiclesPage() {
                         </Badge>
                       </div>
                       <div className="absolute top-4 right-4">
-                        <Badge className="bg-yellow-500 text-black">₹{vehicle.price_per_day}/hour</Badge>
+                        {process.env.NEXT_PUBLIC_TESTING_MODE === 'true' ? (
+                          <div className="space-y-1">
+                            <Badge className="bg-gray-500 text-white text-xs line-through">₹{vehicle.price_per_day}/hour</Badge>
+                            <Badge className="bg-green-500 text-white font-bold">₹1/booking 🧪</Badge>
+                          </div>
+                        ) : (
+                          <Badge className="bg-yellow-500 text-black">₹{vehicle.price_per_day}/hour</Badge>
+                        )}
                       </div>
                     </div>
 

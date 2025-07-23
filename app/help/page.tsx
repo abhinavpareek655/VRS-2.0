@@ -136,7 +136,7 @@ export default function HelpPage() {
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
         <div className="max-w-7xl mx-auto px-4 py-16">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">Help & Support</h1>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 font-serif">Help & Support</h1>
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
               We're here to help you every step of the way. Find answers, get support, or contact us directly.
             </p>

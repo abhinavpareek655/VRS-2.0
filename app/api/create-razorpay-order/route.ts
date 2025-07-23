@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
-    const { vehicleId, pickupDate, returnDate, totalAmount, userId, pickupLocation, specialRequests } = await request.json()
+    const { vehicleId, pickupDate, returnDate, totalAmount, userId, pickupLocation, specialRequests, testingMode, originalAmount } = await request.json()
 
     // Validate input
     if (!vehicleId || !pickupDate || !returnDate || !totalAmount || !userId) {
@@ -93,7 +93,9 @@ export async function POST(request: NextRequest) {
         pickupLocation,
         specialRequests: specialRequests || '',
         vehicleName: vehicle.name,
-        source: 'vehicle-rental-system'
+        source: 'vehicle-rental-system',
+        testingMode: testingMode ? 'true' : 'false',
+        originalAmount: originalAmount ? originalAmount.toString() : totalAmount.toString()
       }
     })
 

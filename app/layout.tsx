@@ -29,6 +29,11 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <Navbar />
+          {process.env.NEXT_PUBLIC_TESTING_MODE === 'true' && (
+            <div className="bg-green-600 text-white py-2 px-4 text-center text-sm font-medium">
+              🧪 <strong>Testing Mode Active:</strong> All bookings are charged ₹1 for testing purposes. This is not production pricing.
+            </div>
+          )}
           <PromotionalBanner />
           <main>{children}</main>
           <FloatingPromoCard />
