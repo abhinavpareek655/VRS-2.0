@@ -175,7 +175,7 @@ This project is licensed under the MIT License.
 
 ## 🆘 Support
 
-For support, email your-email@domain.com or create an issue in the repository.
+For support, email abhinavpareek655@gmail.com or create an issue in the repository.
 
 ---
 
