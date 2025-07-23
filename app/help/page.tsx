@@ -287,7 +287,7 @@ export default function HelpPage() {
                 <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
                   <div>
                     <h4 className="font-semibold text-green-800">Customer Support</h4>
-                    <p className="text-sm text-green-600">Response time: <2 mins</p>
+                    <p className="text-sm text-green-600">Response time: &lt;2 mins</p>
                   </div>
                   <CheckCircle className="w-6 h-6 text-green-600" />
                 </div>
