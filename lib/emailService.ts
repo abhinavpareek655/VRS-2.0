@@ -98,81 +98,152 @@ export const sendBookingConfirmationEmail = async (bookingDetails: any) => {
   }
 }
 
-export const sendBookingCancellationEmail = async (cancellationDetails: any) => {
+export const sendBookingCancellationEmail = async (cancellationDetails: {
+  bookingId: string
+  vehicleName: string
+  pickupDate: string
+  reason: string
+  amount: number
+}) => {
   try {
     const transporter = createTransporter()
     
-    const { booking, vehicle, user, reason, refundInfo } = cancellationDetails
-    
-    if (!user?.email) {
-      console.log('❌ No user email found, skipping cancellation email')
-      return { success: false, error: 'No user email provided' }
-    }
-    
-    const subject = `Booking Cancelled - ${vehicle?.name} (${booking.id})`
+    const subject = `Booking Cancelled - ${cancellationDetails.vehicleName} (${cancellationDetails.bookingId})`
     
     const emailHtml = `
 <html>
 <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4;">
   <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px;">
     <h1 style="color: #dc2626; text-align: center;">❌ Booking Cancelled</h1>
-    <h2>Hello ${user.full_name || user.email},</h2>
-    <p>Your vehicle booking has been <strong>cancelled</strong> as requested.</p>
+    <h2>Hello,</h2>
+    <p>Your vehicle booking has been cancelled as requested.</p>
     
-    <div style="background-color: #fee2e2; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc2626;">
-      <h3>Cancelled Booking Details</h3>
-      <p><strong>Booking ID:</strong> ${booking.id}</p>
-      <p><strong>Vehicle:</strong> ${vehicle?.name}</p>
-      <p><strong>Pickup Location:</strong> ${booking.pickup_location}</p>
-      <p><strong>Pickup Date:</strong> ${new Date(booking.pickup_date).toLocaleString()}</p>
-      <p><strong>Return Date:</strong> ${new Date(booking.return_date).toLocaleString()}</p>
-      <p><strong>Total Amount:</strong> ₹${booking.total_amount}</p>
-      <p><strong>Cancellation Reason:</strong> ${reason}</p>
+    <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc2626;">
+      <h3>Cancellation Details</h3>
+      <p><strong>Booking ID:</strong> ${cancellationDetails.bookingId}</p>
+      <p><strong>Vehicle:</strong> ${cancellationDetails.vehicleName}</p>
+      <p><strong>Original Pickup Date:</strong> ${new Date(cancellationDetails.pickupDate).toLocaleDateString()}</p>
+      <p><strong>Amount:</strong> ₹${cancellationDetails.amount}</p>
+      <p><strong>Cancellation Reason:</strong> ${cancellationDetails.reason}</p>
     </div>
-
-    <div style="background-color: #ecfdf5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
-      <h3>💰 Refund Information</h3>
-      <p><strong>Refund Amount:</strong> ₹${refundInfo.refundAmount} (${refundInfo.refundPercentage}% of total)</p>
-      <p><strong>Processing Time:</strong> ${refundInfo.processingTime}</p>
-      <p><strong>Refund Method:</strong> Original payment method</p>
-    </div>
-
-    <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-      <h3>📞 Need Help?</h3>
-      <p>If you have any questions about your cancellation or refund, please contact us:</p>
-      <p><strong>Email:</strong> support@rentwheels.com</p>
-      <p><strong>Phone:</strong> +91-XXXX-XXXX</p>
-    </div>
-
-    <p>Thank you for choosing RentWheels. We hope to serve you again in the future!</p>
     
-    <hr style="margin: 30px 0; border: none; height: 1px; background-color: #e5e7eb;" />
-    <div style="text-align: center; color: #6b7280; font-size: 12px;">
-      <p>RentWheels - Your Trusted Car Rental Partner</p>
-      <p>This is an automated email. Please do not reply to this message.</p>
+    <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+      <h4>Refund Information</h4>
+      <p>Your refund will be processed within 5-7 business days according to our cancellation policy.</p>
+    </div>
+    
+    <p>We're sorry to see you go. If you have any questions, please don't hesitate to contact us.</p>
+    
+    <div style="background-color: #e5e7eb; padding: 15px; text-align: center; color: #6b7280; margin-top: 30px;">
+      <p>&copy; 2025 RentWheels. All rights reserved.</p>
+      <p>This is an automated email. Please do not reply to this email.</p>
     </div>
   </div>
 </body>
-</html>`
+</html>
+    `
 
     const mailOptions = {
       from: process.env.SMTP_USER,
-      to: user.email,
-      subject,
+      to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
+      subject: subject,
       html: emailHtml
     }
 
-    console.log('📤 Sending cancellation email to:', user.email)
     const result = await transporter.sendMail(mailOptions)
-    console.log('✅ Cancellation email sent successfully:', result.messageId)
     
     return { 
       success: true, 
-      messageId: result.messageId,
-      result: result 
+      messageId: result.messageId
     }
   } catch (error) {
     console.error('❌ Error sending cancellation email:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }
+  }
+}
+
+export const sendBookingModificationEmail = async (modificationDetails: {
+  bookingId: string
+  vehicleName: string
+  oldPickupDate: string
+  newPickupDate: string
+  oldAmount: number
+  newAmount: number
+}) => {
+  try {
+    const transporter = createTransporter()
+    
+    const subject = `Booking Modified - ${modificationDetails.vehicleName} (${modificationDetails.bookingId})`
+    const amountDifference = modificationDetails.newAmount - modificationDetails.oldAmount
+    
+    const emailHtml = `
+<html>
+<body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px;">
+    <h1 style="color: #2563eb; text-align: center;">✏️ Booking Modified</h1>
+    <h2>Hello,</h2>
+    <p>Your vehicle booking has been modified successfully.</p>
+    
+    <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
+      <h3>Modification Details</h3>
+      <p><strong>Booking ID:</strong> ${modificationDetails.bookingId}</p>
+      <p><strong>Vehicle:</strong> ${modificationDetails.vehicleName}</p>
+      
+      <div style="margin: 15px 0;">
+        <h4 style="margin-bottom: 5px;">Pickup Date Changes:</h4>
+        <p style="margin: 5px 0;"><span style="text-decoration: line-through; color: #6b7280;">Old: ${new Date(modificationDetails.oldPickupDate).toLocaleDateString()}</span></p>
+        <p style="margin: 5px 0; color: #059669; font-weight: bold;">New: ${new Date(modificationDetails.newPickupDate).toLocaleDateString()}</p>
+      </div>
+      
+      <div style="margin: 15px 0;">
+        <h4 style="margin-bottom: 5px;">Amount Changes:</h4>
+        <p style="margin: 5px 0;"><span style="text-decoration: line-through; color: #6b7280;">Old: ₹${modificationDetails.oldAmount}</span></p>
+        <p style="margin: 5px 0; color: #059669; font-weight: bold;">New: ₹${modificationDetails.newAmount}</p>
+        <p style="margin: 5px 0; color: ${amountDifference >= 0 ? '#dc2626' : '#059669'}; font-weight: bold;">
+          Difference: ${amountDifference >= 0 ? '+' : ''}₹${amountDifference}
+        </p>
+      </div>
+    </div>
+    
+    <div style="background-color: ${amountDifference >= 0 ? '#fef2f2' : '#f0fdf4'}; padding: 15px; border-radius: 8px; margin: 20px 0;">
+      <h4>Payment Information</h4>
+      ${amountDifference > 0 
+        ? `<p>Additional payment of ₹${amountDifference} is required. You will be contacted shortly for payment processing.</p>`
+        : amountDifference < 0 
+        ? `<p>A refund of ₹${Math.abs(amountDifference)} will be processed within 5-7 business days.</p>`
+        : `<p>No additional payment required.</p>`
+      }
+    </div>
+    
+    <p>Your booking is now pending admin approval for the changes. You will receive a confirmation once approved.</p>
+    
+    <div style="background-color: #e5e7eb; padding: 15px; text-align: center; color: #6b7280; margin-top: 30px;">
+      <p>&copy; 2025 RentWheels. All rights reserved.</p>
+      <p>This is an automated email. Please do not reply to this email.</p>
+    </div>
+  </div>
+</body>
+</html>
+    `
+
+    const mailOptions = {
+      from: process.env.SMTP_USER,
+      to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
+      subject: subject,
+      html: emailHtml
+    }
+
+    const result = await transporter.sendMail(mailOptions)
+    
+    return { 
+      success: true, 
+      messageId: result.messageId
+    }
+  } catch (error) {
+    console.error('❌ Error sending modification email:', error)
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error' 

@@ -40,7 +40,7 @@ A modern, full-stack vehicle rental platform built with Next.js 15, Supabase, an
 
 1. **Clone and Install**
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/abhinavpareek655/VRS-2.0.git
    cd VRS-2.0
    pnpm install
    ```
@@ -175,7 +175,7 @@ This project is licensed under the MIT License.
 
 ## 🆘 Support
 
-For support, email your-email@domain.com or create an issue in the repository.
+For support, email abhinavpareek655@gmail.com or create an issue in the repository.
 
 ---
 

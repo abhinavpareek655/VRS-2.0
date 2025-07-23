@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BookingWidget } from "@/components/booking-widget"
 import { ReviewsCarousel } from "@/components/reviews-carousel"
 import { FAQSection } from "@/components/faq-section"
-import { Shield, Zap, Users, Award } from "lucide-react"
+import { Shield, Zap, Users, Award, History, User, Car } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useAuth } from "@/hooks/use-auth"
 
 const heroImages = [
   "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=1200&h=800&fit=crop",
@@ -144,6 +145,7 @@ const faqs = [
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [showBookingWidget, setShowBookingWidget] = useState(false)
+  const { user } = useAuth()
 
   // Auto-advance slideshow
   useEffect(() => {
@@ -275,6 +277,87 @@ export default function HomePage() {
           <BookingWidget variant="inline" />
         </div>
       </section>
+
+      {/* Dashboard Section for Logged-in Users */}
+      {user && (
+        <section className="py-12 px-4 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <div className="max-w-4xl mx-auto">
+            <motion.div
+              className="text-center mb-8"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 font-serif">
+                Welcome back, {user.user_metadata?.full_name || user.email?.split('@')[0]}!
+              </h2>
+              <p className="text-lg text-gray-600 mb-6">
+                Manage your bookings and explore your rental history
+              </p>
+            </motion.div>
+
+            <motion.div
+              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <Card className="hover:shadow-lg transition-shadow duration-300">
+                <CardHeader className="text-center pb-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <History className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <CardTitle className="text-xl font-semibold">My Bookings</CardTitle>
+                  <CardDescription>View and manage your current and past rentals</CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <Link href="/bookings">
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                      View Bookings
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow duration-300">
+                <CardHeader className="text-center pb-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <User className="h-6 w-6 text-green-600" />
+                  </div>
+                  <CardTitle className="text-xl font-semibold">Profile Settings</CardTitle>
+                  <CardDescription>Update your personal information and preferences</CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <Link href="/dashboard">
+                    <Button variant="outline" className="w-full border-green-600 text-green-600 hover:bg-green-50">
+                      Manage Profile
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow duration-300">
+                <CardHeader className="text-center pb-4">
+                  <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Car className="h-6 w-6 text-yellow-600" />
+                  </div>
+                  <CardTitle className="text-xl font-semibold">Browse Vehicles</CardTitle>
+                  <CardDescription>Explore our premium fleet for your next trip</CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <Link href="/vehicles">
+                    <Button variant="outline" className="w-full border-yellow-600 text-yellow-600 hover:bg-yellow-50">
+                      View Fleet
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       {/* Vehicle Categories */}
       <section className="py-20 px-4">

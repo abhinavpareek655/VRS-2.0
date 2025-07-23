@@ -1,22 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sendBookingConfirmationEmail } from '@/lib/email'
+import { sendBookingConfirmationEmail, sendBookingCancellationEmail, sendBookingModificationEmail } from '@/lib/emailService'
 
 export async function POST(request: NextRequest) {
   try {
-    const { type, bookingDetails } = await request.json()
+    const body = await request.json()
+    const { type } = body
 
-    if (!type || !bookingDetails) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    if (!type) {
+      return NextResponse.json({ error: 'Missing email type' }, { status: 400 })
     }
 
     let result
 
     switch (type) {
-      case 'booking-confirmation':
-        result = await sendBookingConfirmationEmail(bookingDetails)
+      case 'booking_confirmation':
+        result = await sendBookingConfirmationEmail(body.bookingDetails)
         break
-      case 'booking-cancellation':
-        return NextResponse.json({ error: 'Cancellation email not supported' }, { status: 400 })
+      case 'booking_cancelled':
+        result = await sendBookingCancellationEmail({
+          bookingId: body.bookingId,
+          vehicleName: body.vehicleName,
+          pickupDate: body.pickupDate,
+          reason: body.reason,
+          amount: body.amount
+        })
+        break
+      case 'booking_modified':
+        result = await sendBookingModificationEmail({
+          bookingId: body.bookingId,
+          vehicleName: body.vehicleName,
+          oldPickupDate: body.oldPickupDate,
+          newPickupDate: body.newPickupDate,
+          oldAmount: body.oldAmount,
+          newAmount: body.newAmount
+        })
+        break
       default:
         return NextResponse.json({ error: 'Invalid email type' }, { status: 400 })
     }
@@ -24,7 +42,7 @@ export async function POST(request: NextRequest) {
     if (result.success) {
       return NextResponse.json({ 
         success: true, 
-        messageId: (result as { messageId?: string }).messageId,
+        messageId: result.messageId,
         message: 'Email sent successfully'
       })
     } else {
